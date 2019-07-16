@@ -25,21 +25,11 @@ namespace identity.fitness_pro.ru
             Configuration = configuration;
             Environment = environment;
 
-            var cc = Configuration.GetSection("SettingsFilePath").Value;
-
             var builder = new ConfigurationBuilder()
                 .SetBasePath(environment.ContentRootPath)
                 .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\clients.json", true, true)
                 .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\identityresources.json", true, true);
             Settings = builder.Build();
-
-            //var builder = new ConfigurationBuilder()
-            //    .SetBasePath(environment.ContentRootPath)
-            //    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-            //    .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", optional: true)
-            //    .AddEnvironmentVariables()
-            //    .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\clients.json", true, true);
-            //Configuration = builder.Build();
         }
 
 
@@ -47,22 +37,11 @@ namespace identity.fitness_pro.ru
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.Configure<CookiePolicyOptions>(options =>
-            //{
-            //    // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-            //    options.CheckConsentNeeded = context => true;
-            //    options.MinimumSameSitePolicy = SameSiteMode.None;
-            //});
-
-
-
-
-
-
-            services.Configure<IEnumerable<IdentityResourceConfigItem>>(Settings.GetSection("CustomIdentityClaims"));
-
-
-
+            var builder = services.AddIdentityServer()
+                .AddInMemoryIdentityResources(Config.GetIdentityResources());
+                //.AddInMemoryApiResources(Config.GetApis())
+                //.AddInMemoryClients(Config.GetClients())
+                //.AddTestUsers(Config.GetUsers());
 
 
 
