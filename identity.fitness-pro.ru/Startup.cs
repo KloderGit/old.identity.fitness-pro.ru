@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using identity.fitness_pro.ru.Configuration;
+﻿using identity.fitness_pro.ru.Configuration;
+using IdentityServer4.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using System.Collections.Generic;
 
 namespace identity.fitness_pro.ru
 {
@@ -37,11 +33,17 @@ namespace identity.fitness_pro.ru
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<IdentityResourceConfig>(Settings);
+
+            var serviceProvider = services.BuildServiceProvider();
+
             var builder = services.AddIdentityServer()
-                .AddInMemoryIdentityResources(Config.GetIdentityResources());
-                //.AddInMemoryApiResources(Config.GetApis())
-                //.AddInMemoryClients(Config.GetClients())
-                //.AddTestUsers(Config.GetUsers());
+                .AddInMemoryIdentityResources(new ResourceCreator<IdentityResourceConfig>()
+                                                  .GetResources<IdentityResource>(serviceProvider.GetService<IOptions<IdentityResourceConfig>>())
+                );
+            //.AddInMemoryApiResources(Config.GetApis())
+            //.AddInMemoryClients(Config.GetClients())
+            //.AddTestUsers(Config.GetUsers());
 
 
 
