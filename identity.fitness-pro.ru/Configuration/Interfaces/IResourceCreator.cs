@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace identity.fitness_pro.ru.Configuration.Interfaces
 {
-    public interface IResourceCreator<TConfig>
+    public interface IResourceCreator<TConfig> where TConfig : class, new()
     {
-        IEnumerable<T> GetResources<T>(TConfig config);
+        IEnumerable<T> GetResources<T>(IOptions<TConfig> config);
     }
 }

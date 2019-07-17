@@ -1,18 +1,21 @@
 ﻿using identity.fitness_pro.ru.Configuration.Interfaces;
+using IdentityServer4.Models;
+using Mapster;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace identity.fitness_pro.ru.Configuration
+namespace identity.fitness_pro.ru.Configuration.Models
 {
-    public class IdentityResourceConfig : IPayload
+    public class IdentityResourceConfig : IPayload<IdentityResource>
     {
         public IEnumerable<IdentityResourceConfigItem> IdentityResources { get; set; }
 
-        public Object GetPayload()
+        public IEnumerable<IdentityResource> GetPayload()
         {
-            return IdentityResources;
+            return IdentityResources.Adapt<IEnumerable<IdentityResource>>();
         }
     }
 

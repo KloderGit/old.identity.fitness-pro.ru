@@ -1,12 +1,13 @@
-﻿using System;
+﻿using IdentityServer4.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace identity.fitness_pro.ru.Configuration.Interfaces
 {
-    public interface IPayload
+    public interface IPayload<out T> where T: Resource
     {
-        Object GetPayload();
+        IEnumerable<T> GetPayload();
     }
 }

@@ -1,5 +1,7 @@
 ﻿using identity.fitness_pro.ru.Configuration;
+using identity.fitness_pro.ru.Configuration.Models;
 using IdentityServer4.Models;
+using IdentityServer4.Test;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -20,32 +22,23 @@ namespace identity.fitness_pro.ru
         {
             Configuration = configuration;
             Environment = environment;
-
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(environment.ContentRootPath)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\clients.json", true, true)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\identityresources.json", true, true);
-            Settings = builder.Build();
+            Settings = LoadExternalConfigurations(Environment.ContentRootPath);
         }
-
-
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<IdentityResourceConfig>(Settings);
+            services.Configure<ApiResourceConfig>(Settings);
+            services.Configure<ClientResourceConfig>(Settings);
 
             var serviceProvider = services.BuildServiceProvider();
 
             var builder = services.AddIdentityServer()
-                .AddInMemoryIdentityResources(new ResourceCreator<IdentityResourceConfig>()
-                                                  .GetResources<IdentityResource>(serviceProvider.GetService<IOptions<IdentityResourceConfig>>())
-                );
-            //.AddInMemoryApiResources(Config.GetApis())
-            //.AddInMemoryClients(Config.GetClients())
-            //.AddTestUsers(Config.GetUsers());
-
-
+                .AddInMemoryIdentityResources(new ResourceCreator<IdentityResourceConfig>().GetResources<IdentityResource>(serviceProvider.GetService<IOptions<IdentityResourceConfig>>()))
+                .AddInMemoryApiResources(new ResourceCreator<ApiResourceConfig>().GetResources<ApiResource>(serviceProvider.GetService<IOptions<ApiResourceConfig>>()))
+                .AddInMemoryClients(serviceProvider.GetService<IOptions<ClientResourceConfig>>().Value.GetPayload())
+                .AddTestUsers( new TestUsers().GetUsers() );
 
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
@@ -69,12 +62,25 @@ namespace identity.fitness_pro.ru
             app.UseStaticFiles();
             app.UseCookiePolicy();
 
+            app.UseIdentityServer();
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+        }
+
+        IConfiguration LoadExternalConfigurations(string path)
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(path)
+                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\identityresources.json", true, true)
+                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\apiresources.json", true, true)
+                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\clients.json", true, true)
+                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\testusers.json", true, true);
+            return builder.Build();
         }
     }
 }
