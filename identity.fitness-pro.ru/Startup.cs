@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 
 namespace identity.fitness_pro.ru
@@ -28,20 +29,23 @@ namespace identity.fitness_pro.ru
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<IdentityResourceConfig>(Settings);
-            services.Configure<ApiResourceConfig>(Settings);
-            services.Configure<ClientResourceConfig>(Settings);
-
-            var serviceProvider = services.BuildServiceProvider();
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             var builder = services.AddIdentityServer()
-                .AddInMemoryIdentityResources(new ResourceCreator<IdentityResourceConfig>().GetResources<IdentityResource>(serviceProvider.GetService<IOptions<IdentityResourceConfig>>()))
-                .AddInMemoryApiResources(new ResourceCreator<ApiResourceConfig>().GetResources<ApiResource>(serviceProvider.GetService<IOptions<ApiResourceConfig>>()))
-                .AddInMemoryClients(serviceProvider.GetService<IOptions<ClientResourceConfig>>().Value.GetPayload())
-                .AddTestUsers( new TestUsers().GetUsers() );
+                .AddInMemoryIdentityResources(Config.GetIdentityResources())
+                .AddInMemoryApiResources(Config.GetApis())
+                .AddInMemoryClients(Config.GetClients())
+                .AddTestUsers(Config.GetUsers());
+            //.AddProfileService<CustomProfileService>();
 
-
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            if (Environment.IsDevelopment())
+            {
+                builder.AddDeveloperSigningCredential();
+            }
+            else
+            {
+                throw new Exception("need to configure key material");
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
