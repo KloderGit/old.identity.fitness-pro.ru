@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using identity.fitness_pro.ru.Configuration;
+﻿using identity.fitness_pro.ru.Configuration;
+using identity.fitness_pro.ru.Configuration.Models;
+using IdentityServer4.Models;
+using IdentityServer4.Test;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using System;
+using System.Collections.Generic;
 
 namespace identity.fitness_pro.ru
 {
@@ -24,54 +23,44 @@ namespace identity.fitness_pro.ru
         {
             Configuration = configuration;
             Environment = environment;
-
-            var cc = Configuration.GetSection("SettingsFilePath").Value;
-
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(environment.ContentRootPath)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\clients.json", true, true)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\identityresources.json", true, true);
-            Settings = builder.Build();
-
-            //var builder = new ConfigurationBuilder()
-            //    .SetBasePath(environment.ContentRootPath)
-            //    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-            //    .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", optional: true)
-            //    .AddEnvironmentVariables()
-            //    .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\clients.json", true, true);
-            //Configuration = builder.Build();
+            Settings = LoadExternalConfigurations(Environment.ContentRootPath);
         }
-
-
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.Configure<CookiePolicyOptions>(options =>
-            //{
-            //    // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-            //    options.CheckConsentNeeded = context => true;
-            //    options.MinimumSameSitePolicy = SameSiteMode.None;
-            //});
-
-
-
-
-
-
-            services.Configure<IEnumerable<IdentityResourceConfigItem>>(Settings.GetSection("CustomIdentityClaims"));
-
-
-
-
-
-
-
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            MapSettingToPoco(services);
+
+            var identityOptions = GetConfigObject<IdetitySettingModel>(services);
+            var identities = IdentityConfig.GetIdentities(identityOptions.Identities);
+
+            var apiOptions = GetConfigObject<ApiSettingModel>(services);
+            var apies = ApiConfig.GetApis(apiOptions.Apies);
+
+            var clientOptions = GetConfigObject<ClientSettingModel>(services);
+            var clients = ClientsConfig.GetClients(clientOptions);
+
+            var builder = services.AddIdentityServer()
+                .AddInMemoryIdentityResources(identities)
+                .AddInMemoryApiResources(apies)
+                .AddInMemoryClients(clients)
+                .AddTestUsers(Config.GetUsers());
+            //.AddProfileService<CustomProfileService>();
+
+            if (Environment.IsDevelopment())
+            {
+                builder.AddDeveloperSigningCredential();
+            }
+            else
+            {
+                throw new Exception("need to configure key material");
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IOptions<IdentityResourceConfigItem> options)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -88,12 +77,37 @@ namespace identity.fitness_pro.ru
             app.UseStaticFiles();
             app.UseCookiePolicy();
 
+            app.UseIdentityServer();
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+        }
+
+        IConfiguration LoadExternalConfigurations(string path)
+        {
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(path)
+                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\IdentitySettings.json", true, true)
+                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\ApiSettings.json", true, true)
+                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\ClientSettings.json", true, true);
+            return builder.Build();
+        }
+
+        void MapSettingToPoco(IServiceCollection services)
+        {
+            services.Configure<ClientSettingModel>(Settings);
+            services.Configure<ApiSettingModel>(Settings);
+            services.Configure<IdetitySettingModel>(Settings);
+        }
+
+        T GetConfigObject<T>(IServiceCollection services) where T: class, new()
+        {
+            var serviceProvider = services.BuildServiceProvider();
+            return serviceProvider.GetService<IOptions<T>>().Value;
         }
     }
 }
