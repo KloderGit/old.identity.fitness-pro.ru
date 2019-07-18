@@ -1,16 +1,17 @@
 ﻿using identity.fitness_pro.ru.Configuration;
 using identity.fitness_pro.ru.Configuration.Models;
+using identity.fitness_pro.ru.Models;
 using IdentityServer4.Models;
-using IdentityServer4.Test;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace identity.fitness_pro.ru
 {
@@ -30,8 +31,6 @@ namespace identity.fitness_pro.ru
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-
             MapSettingToPoco(services);
 
             var identityOptions = GetConfigObject<IdetitySettingModel>(services);
@@ -44,6 +43,12 @@ namespace identity.fitness_pro.ru
 
             var clientOptions = GetConfigObject<ClientSettingModel>(services);
             var clients = ClientsConfig.GetClients(clientOptions);
+
+            services.AddDbContext<ApplicationContext>(options =>
+                options.UseSqlServer(
+                    Configuration.GetConnectionString("DefaultConnection")));
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationContext>();
 
             var builder = services.AddIdentityServer()
                 .AddInMemoryIdentityResources(identities)
@@ -60,6 +65,9 @@ namespace identity.fitness_pro.ru
             {
                 throw new Exception("need to configure key material");
             }
+
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -79,6 +87,7 @@ namespace identity.fitness_pro.ru
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
+            app.UseAuthentication();
 
             app.UseIdentityServer();
 
