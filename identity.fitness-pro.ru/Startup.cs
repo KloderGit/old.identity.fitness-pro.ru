@@ -31,10 +31,21 @@ namespace identity.fitness_pro.ru
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
+            MapSettingToPoco(services);
+
+            var identityOptions = GetConfigObject<IdetitySettingModel>(services);
+            var identities = IdentityConfig.GetIdentities(identityOptions.Identities);
+
+            var apiOptions = GetConfigObject<ApiSettingModel>(services);
+            var apies = ApiConfig.GetApis(apiOptions.Apies);
+
+            var clientOptions = GetConfigObject<ClientSettingModel>(services);
+            var clients = ClientsConfig.GetClients(clientOptions);
+
             var builder = services.AddIdentityServer()
-                .AddInMemoryIdentityResources(Config.GetIdentityResources())
-                .AddInMemoryApiResources(Config.GetApis())
-                .AddInMemoryClients(Config.GetClients())
+                .AddInMemoryIdentityResources(identities)
+                .AddInMemoryApiResources(apies)
+                .AddInMemoryClients(clients)
                 .AddTestUsers(Config.GetUsers());
             //.AddProfileService<CustomProfileService>();
 
@@ -49,7 +60,7 @@ namespace identity.fitness_pro.ru
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IOptions<IdentityResourceConfigItem> options)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -80,11 +91,23 @@ namespace identity.fitness_pro.ru
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(path)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\identityresources.json", true, true)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\apiresources.json", true, true)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\clients.json", true, true)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\testusers.json", true, true);
+                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\IdentitySettings.json", true, true)
+                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\ApiSettings.json", true, true)
+                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\ClientSettings.json", true, true);
             return builder.Build();
+        }
+
+        void MapSettingToPoco(IServiceCollection services)
+        {
+            services.Configure<ClientSettingModel>(Settings);
+            services.Configure<ApiSettingModel>(Settings);
+            services.Configure<IdetitySettingModel>(Settings);
+        }
+
+        T GetConfigObject<T>(IServiceCollection services) where T: class, new()
+        {
+            var serviceProvider = services.BuildServiceProvider();
+            return serviceProvider.GetService<IOptions<T>>().Value;
         }
     }
 }
