@@ -54,7 +54,8 @@ namespace identity.fitness_pro.ru
                 .AddInMemoryIdentityResources(identities)
                 .AddInMemoryApiResources(apies)
                 .AddInMemoryClients(clients)
-                .AddTestUsers(Config.GetUsers());
+                .AddAspNetIdentity<ApplicationUser>();
+                //.AddTestUsers(Config.GetUsers());
             //.AddProfileService<CustomProfileService>();
 
             if (Environment.IsDevelopment())
