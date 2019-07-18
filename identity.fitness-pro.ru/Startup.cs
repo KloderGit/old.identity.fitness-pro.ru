@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace identity.fitness_pro.ru
 {
@@ -34,7 +35,9 @@ namespace identity.fitness_pro.ru
             MapSettingToPoco(services);
 
             var identityOptions = GetConfigObject<IdetitySettingModel>(services);
-            var identities = IdentityConfig.GetIdentities(identityOptions.Identities);
+            List<IdentityResource> identities = new List<IdentityResource>( IdentityConfig.GetIdentities(identityOptions.Identities) );
+            identities.Add(new IdentityResources.OpenId());
+            identities.Add(new IdentityResources.Profile());
 
             var apiOptions = GetConfigObject<ApiSettingModel>(services);
             var apies = ApiConfig.GetApis(apiOptions.Apies);
