@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 
 namespace identity.fitness_pro.ru
@@ -28,24 +29,38 @@ namespace identity.fitness_pro.ru
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<IdentityResourceConfig>(Settings);
-            services.Configure<ApiResourceConfig>(Settings);
-            services.Configure<ClientResourceConfig>(Settings);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            var serviceProvider = services.BuildServiceProvider();
+            MapSettingToPoco(services);
+
+            var identityOptions = GetConfigObject<IdetitySettingModel>(services);
+            var identities = IdentityConfig.GetIdentities(identityOptions.Identities);
+
+            var apiOptions = GetConfigObject<ApiSettingModel>(services);
+            var apies = ApiConfig.GetApis(apiOptions.Apies);
+
+            var clientOptions = GetConfigObject<ClientSettingModel>(services);
+            var clients = ClientsConfig.GetClients(clientOptions);
 
             var builder = services.AddIdentityServer()
-                .AddInMemoryIdentityResources(new ResourceCreator<IdentityResourceConfig>().GetResources<IdentityResource>(serviceProvider.GetService<IOptions<IdentityResourceConfig>>()))
-                .AddInMemoryApiResources(new ResourceCreator<ApiResourceConfig>().GetResources<ApiResource>(serviceProvider.GetService<IOptions<ApiResourceConfig>>()))
-                .AddInMemoryClients(serviceProvider.GetService<IOptions<ClientResourceConfig>>().Value.GetPayload())
-                .AddTestUsers( new TestUsers().GetUsers() );
+                .AddInMemoryIdentityResources(identities)
+                .AddInMemoryApiResources(apies)
+                .AddInMemoryClients(clients)
+                .AddTestUsers(Config.GetUsers());
+            //.AddProfileService<CustomProfileService>();
 
-
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            if (Environment.IsDevelopment())
+            {
+                builder.AddDeveloperSigningCredential();
+            }
+            else
+            {
+                throw new Exception("need to configure key material");
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IOptions<IdentityResourceConfigItem> options)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -76,11 +91,23 @@ namespace identity.fitness_pro.ru
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(path)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\identityresources.json", true, true)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\apiresources.json", true, true)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\clients.json", true, true)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\testusers.json", true, true);
+                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\IdentitySettings.json", true, true)
+                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\ApiSettings.json", true, true)
+                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\ClientSettings.json", true, true);
             return builder.Build();
+        }
+
+        void MapSettingToPoco(IServiceCollection services)
+        {
+            services.Configure<ClientSettingModel>(Settings);
+            services.Configure<ApiSettingModel>(Settings);
+            services.Configure<IdetitySettingModel>(Settings);
+        }
+
+        T GetConfigObject<T>(IServiceCollection services) where T: class, new()
+        {
+            var serviceProvider = services.BuildServiceProvider();
+            return serviceProvider.GetService<IOptions<T>>().Value;
         }
     }
 }

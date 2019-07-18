@@ -1,12 +1,18 @@
-﻿using IdentityServer4.Test;
+﻿using IdentityModel;
+using IdentityServer4;
+using IdentityServer4.Models;
+using IdentityServer4.Test;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
-namespace identity.fitness_pro.ru.Configuration.Models
+namespace identity.fitness_pro.ru
 {
-    public class TestUsers
+    public static class Config
     {
-        public List<TestUser> GetUsers()
+        public static List<TestUser> GetUsers()
         {
             return new List<TestUser>
             {
