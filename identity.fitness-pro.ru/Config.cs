@@ -38,9 +38,9 @@ namespace identity.fitness_pro.ru
                     {
                         new Claim("name", "Bob"),
                         new Claim("website", "https://bob.com"),
-                        new Claim("Role", "Student"),
-                        new Claim("Dogovor", "Common"),
-                        new Claim("Discount", "false")
+                        new Claim("role", "Student"),
+                        new Claim("dogovor", "Common"),
+                        new Claim("discount", "false")
                     }
                 }
             };
