@@ -50,7 +50,9 @@ namespace identity.fitness_pro.ru
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationContext>();
 
-            var builder = services.AddIdentityServer()
+            var builder = services.AddIdentityServer(option =>
+               option.UserInteraction.LoginUrl = "/Identity/Account/Login"
+            )
                 .AddInMemoryIdentityResources(identities)
                 .AddInMemoryApiResources(apies)
                 .AddInMemoryClients(clients)
