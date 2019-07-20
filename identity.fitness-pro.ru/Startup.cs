@@ -58,7 +58,7 @@ namespace identity.fitness_pro.ru
             }
             else
             {
-                throw new Exception("need to configure key material");
+                builder.AddSigningCredential(CertificatConfig.GetCertificateFromStore());
             }
         }
 
