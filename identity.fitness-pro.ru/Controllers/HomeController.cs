@@ -17,6 +17,8 @@ namespace identity.fitness_pro.ru.Controllers
 
         public IActionResult Privacy()
         {
+            var dfg = HttpContext.User;
+
             return View();
         }
 
