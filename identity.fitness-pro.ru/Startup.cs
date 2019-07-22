@@ -74,7 +74,8 @@ namespace identity.fitness_pro.ru
             }
             else
             {
-                builder.AddSigningCredential(CertificatConfig.GetCertificateFromStore());
+                //builder.AddSigningCredential(CertificatConfig.GetCertificateFromStore());
+                builder.AddSigningCredential("C:\\Sertificat\\STAR_fitness-pro_ru.pfx");
             }
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
