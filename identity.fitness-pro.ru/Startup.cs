@@ -9,7 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Serilog;
 using System;
 using System.Collections.Generic;
 
@@ -20,6 +22,7 @@ namespace identity.fitness_pro.ru
         public IConfiguration Configuration { get; }
         public IConfiguration Settings { get; }
         public IHostingEnvironment Environment { get; }
+        public ILoggerFactory LoggerFactory { get; }
 
         public Startup(IConfiguration configuration, IHostingEnvironment environment)
         {
@@ -32,6 +35,8 @@ namespace identity.fitness_pro.ru
         public void ConfigureServices(IServiceCollection services)
         {
             MapSettingToPoco(services);
+
+            services.AddLogging();
 
             var identityOptions = GetConfigObject<IdetitySettingModel>(services);
             List<IdentityResource> identities = new List<IdentityResource>( IdentityConfig.GetIdentities(identityOptions.Identities) );
@@ -77,8 +82,11 @@ namespace identity.fitness_pro.ru
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            loggerFactory.AddFile("C:\\temp\\my.log");
+
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
