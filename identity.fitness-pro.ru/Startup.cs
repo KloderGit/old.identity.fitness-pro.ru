@@ -36,6 +36,8 @@ namespace identity.fitness_pro.ru
             var identityOptions = GetConfigObject<IdetitySettingModel>(services);
             List<IdentityResource> identities = new List<IdentityResource>( IdentityConfig.GetIdentities(identityOptions.Identities) );
             identities.Add(new IdentityResources.OpenId());
+            identities.Add(new IdentityResources.Email());
+            identities.Add(new IdentityResources.Phone());
             identities.Add(new IdentityResources.Profile());
 
             var apiOptions = GetConfigObject<ApiSettingModel>(services);
@@ -53,6 +55,7 @@ namespace identity.fitness_pro.ru
             var builder = services.AddIdentityServer(option =>
                option.UserInteraction.LoginUrl = "/Identity/Account/Login"
             )
+                //.AddCertificateFromStore()
                 .AddInMemoryIdentityResources(identities)
                 .AddInMemoryApiResources(apies)
                 .AddInMemoryClients(clients)
