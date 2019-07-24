@@ -42,9 +42,9 @@ namespace identity.fitness_pro.ru.Migrations
                     LockoutEnabled = table.Column<bool>(nullable: false),
                     AccessFailedCount = table.Column<int>(nullable: false),
                     ExternalGuid1C = table.Column<string>(nullable: true),
-                    Birthday = table.Column<DateTime>(nullable: false),
-                    City = table.Column<string>(nullable: true),
-                    Address = table.Column<string>(nullable: true)
+                    Birthdate = table.Column<DateTime>(nullable: false),
+                    Address = table.Column<string>(nullable: true),
+                    Picture = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -97,8 +97,8 @@ namespace identity.fitness_pro.ru.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(nullable: false),
-                    ProviderKey = table.Column<string>(nullable: false),
+                    LoginProvider = table.Column<string>(maxLength: 128, nullable: false),
+                    ProviderKey = table.Column<string>(maxLength: 128, nullable: false),
                     ProviderDisplayName = table.Column<string>(nullable: true),
                     UserId = table.Column<string>(nullable: false)
                 },
@@ -142,8 +142,8 @@ namespace identity.fitness_pro.ru.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<string>(nullable: false),
-                    LoginProvider = table.Column<string>(nullable: false),
-                    Name = table.Column<string>(nullable: false),
+                    LoginProvider = table.Column<string>(maxLength: 128, nullable: false),
+                    Name = table.Column<string>(maxLength: 128, nullable: false),
                     Value = table.Column<string>(nullable: true)
                 },
                 constraints: table =>

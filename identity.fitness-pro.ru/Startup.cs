@@ -39,11 +39,13 @@ namespace identity.fitness_pro.ru
             services.AddLogging();
 
             var identityOptions = GetConfigObject<IdetitySettingModel>(services);
-            List<IdentityResource> identities = new List<IdentityResource>( IdentityConfig.GetIdentities(identityOptions.Identities) );
-            identities.Add(new IdentityResources.OpenId());
-            identities.Add(new IdentityResources.Email());
-            identities.Add(new IdentityResources.Phone());
-            identities.Add(new IdentityResources.Profile());
+            List<IdentityResource> identities = new List<IdentityResource>(IdentityConfig.GetIdentities(identityOptions.Identities))
+            {
+                new IdentityResources.OpenId(),
+                new IdentityResources.Email(),
+                new IdentityResources.Phone(),
+                new IdentityResources.Profile()
+            };
 
             var apiOptions = GetConfigObject<ApiSettingModel>(services);
             var apies = ApiConfig.GetApis(apiOptions.Apies);
@@ -52,41 +54,29 @@ namespace identity.fitness_pro.ru
             var clients = ClientsConfig.GetClients(clientOptions);
 
             services.AddDbContext<ApplicationContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDefaultIdentity<ApplicationUser>()
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationContext>();
 
-            var builder = services.AddIdentityServer(option =>
-               option.UserInteraction.LoginUrl = "/Identity/Account/Login"
-            )
-                //.AddCertificateFromStore()
+            var builder = services.AddIdentityServer()
                 .AddInMemoryIdentityResources(identities)
                 .AddInMemoryApiResources(apies)
                 .AddInMemoryClients(clients)
                 .AddAspNetIdentity<ApplicationUser>();
-                //.AddTestUsers(Config.GetUsers());
             //.AddProfileService<CustomProfileService>();
 
             if (Environment.IsDevelopment())
             {
                 builder.AddDeveloperSigningCredential();
             }
-            else
-            {
-                //builder.AddSigningCredential(CertificatConfig.GetCertificateFromStore());
-                //builder.AddSigningCredential("C:\\Sertificat\\STAR_fitness-pro_ru.pfx");
-            }
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddFile("C:\\temp\\my.log");
-
 
             if (env.IsDevelopment())
             {

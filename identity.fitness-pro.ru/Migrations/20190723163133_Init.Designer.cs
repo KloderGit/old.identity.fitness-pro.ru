@@ -10,7 +10,7 @@ using identity.fitness_pro.ru.Models;
 namespace identity.fitness_pro.ru.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20190718142224_Init")]
+    [Migration("20190723163133_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -87,9 +87,11 @@ namespace identity.fitness_pro.ru.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.Property<string>("LoginProvider");
+                    b.Property<string>("LoginProvider")
+                        .HasMaxLength(128);
 
-                    b.Property<string>("ProviderKey");
+                    b.Property<string>("ProviderKey")
+                        .HasMaxLength(128);
 
                     b.Property<string>("ProviderDisplayName");
 
@@ -120,9 +122,11 @@ namespace identity.fitness_pro.ru.Migrations
                 {
                     b.Property<string>("UserId");
 
-                    b.Property<string>("LoginProvider");
+                    b.Property<string>("LoginProvider")
+                        .HasMaxLength(128);
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .HasMaxLength(128);
 
                     b.Property<string>("Value");
 
@@ -140,9 +144,7 @@ namespace identity.fitness_pro.ru.Migrations
 
                     b.Property<string>("Address");
 
-                    b.Property<DateTime>("Birthday");
-
-                    b.Property<string>("City");
+                    b.Property<DateTime>("Birthdate");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken();
@@ -169,6 +171,8 @@ namespace identity.fitness_pro.ru.Migrations
                     b.Property<string>("PhoneNumber");
 
                     b.Property<bool>("PhoneNumberConfirmed");
+
+                    b.Property<string>("Picture");
 
                     b.Property<string>("SecurityStamp");
 
