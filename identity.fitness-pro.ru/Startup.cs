@@ -53,8 +53,8 @@ namespace identity.fitness_pro.ru
             var clientOptions = GetConfigObject<ClientSettingModel>(services);
             var clients = ClientsConfig.GetClients(clientOptions);
 
-            services.AddDbContext<ApplicationContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PostgreSQL")));
+
             services.AddDefaultIdentity<ApplicationUser>()
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationContext>();
