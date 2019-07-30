@@ -49,11 +49,20 @@ namespace identity.fitness_pro.ru
 
             var apiOptions = GetConfigObject<ApiSettingModel>(services);
             var apies = ApiConfig.GetApis(apiOptions.Apies);
-
             var clientOptions = GetConfigObject<ClientSettingModel>(services);
             var clients = ClientsConfig.GetClients(clientOptions);
 
-            services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PostgreSQL")));
+            var connectionOptions = GetConfigObject<ConnectionStringModel>(services);
+            var connectionString = connectionOptions.ConnectionStrings["PostgreSQL"];
+
+            if (Environment.IsDevelopment())
+            {
+                services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PostgreSQL")));
+            }
+            else
+            {
+                services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(connectionString));
+            }
 
             services.AddDefaultIdentity<ApplicationUser>()
                 .AddRoles<IdentityRole>()
@@ -110,7 +119,8 @@ namespace identity.fitness_pro.ru
                 .SetBasePath(path)
                 .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\IdentitySettings.json", true, true)
                 .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\ApiSettings.json", true, true)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\ClientSettings.json", true, true);
+                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\ClientSettings.json", true, true)
+                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\ConnectionSettings.json", true, true);
             return builder.Build();
         }
 
@@ -119,6 +129,7 @@ namespace identity.fitness_pro.ru
             services.Configure<ClientSettingModel>(Settings);
             services.Configure<ApiSettingModel>(Settings);
             services.Configure<IdetitySettingModel>(Settings);
+            services.Configure<ConnectionStringModel>(Settings);
         }
 
         T GetConfigObject<T>(IServiceCollection services) where T: class, new()
