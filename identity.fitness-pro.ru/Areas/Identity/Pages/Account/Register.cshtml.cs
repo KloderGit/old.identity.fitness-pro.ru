@@ -85,7 +85,7 @@ namespace identity.fitness_pro.ru.Areas.Identity.Pages.Account
                 {
                     UserName = Input.Email,
                     Email = Input.Email,
-                    Birthday = new DateTime(new Random().Next(1990, 2005), new Random().Next(1, 12), new Random().Next(1, 30))
+                    Birthdate = new DateTime(new Random().Next(1990, 2005), new Random().Next(1, 12), new Random().Next(1, 30))
                 };
 
                 var result = await _userManager.CreateAsync(user, Input.Password);
