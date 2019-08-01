@@ -93,7 +93,7 @@ namespace identity.fitness_pro.ru.Areas.Identity.Pages.Account
                 {
                     await _userManager.AddClaimAsync(user, new Claim("My Test Claim", "--There is a claim value--", ClaimValueTypes.String, "SelfIssuer"));
 
-                    var rrs = await _userManager.AddToRoleAsync(user, "kld-admin");
+                    //var rrs = await _userManager.AddToRoleAsync(user, "kld-admin");
 
                     //_logger.LogInformation("User created a new account with password.");
 
