@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 
 namespace identity.fitness_pro.ru
 {
@@ -78,6 +79,11 @@ namespace identity.fitness_pro.ru
             if (Environment.IsDevelopment())
             {
                 builder.AddDeveloperSigningCredential();
+            }
+            else
+            {
+                var certificatPath = Configuration.GetSection("SettingsFilePath").Value + @"\STAR_fitness-pro_ru.pfx";
+                builder.AddSigningCredential(new X509Certificate2(certificatPath, ""));
             }
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
