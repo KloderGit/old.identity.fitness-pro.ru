@@ -24,11 +24,15 @@ namespace identity.fitness_pro.ru
         public IHostingEnvironment Environment { get; }
         public ILoggerFactory LoggerFactory { get; }
 
+        private string privateSettingPath;
+
         public Startup(IConfiguration configuration, IHostingEnvironment environment)
         {
             Configuration = configuration;
             Environment = environment;
-            Settings = LoadExternalConfigurations(Environment.ContentRootPath);
+            privateSettingPath = Configuration.GetSection("ConfigPath").Value;
+            //var dfg = LoadExternalConfigurations(Environment.ContentRootPath);
+            Settings = AppExternalSetting.LoadSettings(privateSettingPath);
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -121,7 +125,8 @@ namespace identity.fitness_pro.ru
                 .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\ApiSettings.json", true, true)
                 .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\ClientSettings.json", true, true)
                 .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\ConnectionSettings.json", true, true);
-            return builder.Build();
+            var sdfs= builder.Build();
+            return sdfs;
         }
 
         void MapSettingToPoco(IServiceCollection services)
