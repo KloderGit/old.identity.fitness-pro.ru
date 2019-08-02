@@ -24,15 +24,11 @@ namespace identity.fitness_pro.ru
         public IHostingEnvironment Environment { get; }
         public ILoggerFactory LoggerFactory { get; }
 
-        private string privateSettingPath;
-
         public Startup(IConfiguration configuration, IHostingEnvironment environment)
         {
             Configuration = configuration;
             Environment = environment;
-            privateSettingPath = Configuration.GetSection("ConfigPath").Value;
-            //var dfg = LoadExternalConfigurations(Environment.ContentRootPath);
-            Settings = AppExternalSetting.LoadSettings(privateSettingPath);
+            Settings = new LoadExternalPrivateConfig().Load(Configuration.GetSection("PrivateConfigPath").Value);
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -53,6 +49,7 @@ namespace identity.fitness_pro.ru
 
             var apiOptions = GetConfigObject<ApiSettingModel>(services);
             var apies = ApiConfig.GetApis(apiOptions.Apies);
+
             var clientOptions = GetConfigObject<ClientSettingModel>(services);
             var clients = ClientsConfig.GetClients(clientOptions);
 
@@ -115,18 +112,6 @@ namespace identity.fitness_pro.ru
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-        }
-
-        IConfiguration LoadExternalConfigurations(string path)
-        {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(path)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\IdentitySettings.json", true, true)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\ApiSettings.json", true, true)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\ClientSettings.json", true, true)
-                .AddJsonFile(Configuration.GetSection("SettingsFilePath").Value + @"\ConnectionSettings.json", true, true);
-            var sdfs= builder.Build();
-            return sdfs;
         }
 
         void MapSettingToPoco(IServiceCollection services)
