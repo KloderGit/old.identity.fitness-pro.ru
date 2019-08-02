@@ -1,4 +1,5 @@
 ﻿using identity.fitness_pro.ru.Configuration;
+using identity.fitness_pro.ru.Configuration.Extensions;
 using identity.fitness_pro.ru.Configuration.Models;
 using identity.fitness_pro.ru.Models;
 using IdentityServer4.Models;
@@ -24,19 +25,31 @@ namespace identity.fitness_pro.ru
         public IHostingEnvironment Environment { get; }
         public ILoggerFactory LoggerFactory { get; }
 
+        IServiceCollection Services { get; }
+
         public Startup(IConfiguration configuration, IHostingEnvironment environment)
         {
             Configuration = configuration;
             Environment = environment;
+
+            var buildTypeIsTest = Configuration.GetValue<string>("build");
+
             Settings = new LoadExternalPrivateConfig().Load(Configuration.GetSection("PrivateConfigPath").Value);
         }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            MapSettingToPoco(services);
+            MapExternalConfigToPoco(services);
 
             services.AddLogging();
+
+
+            services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(GetConnectionString()));
+
+            services.AddDefaultIdentity<ApplicationUser>()
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationContext>();
+
 
             var identityOptions = GetConfigObject<IdetitySettingModel>(services);
             List<IdentityResource> identities = new List<IdentityResource>(IdentityConfig.GetIdentities(identityOptions.Identities))
@@ -53,38 +66,18 @@ namespace identity.fitness_pro.ru
             var clientOptions = GetConfigObject<ClientSettingModel>(services);
             var clients = ClientsConfig.GetClients(clientOptions);
 
-            var connectionOptions = GetConfigObject<ConnectionStringModel>(services);
-            var connectionString = connectionOptions.ConnectionStrings["PostgreSQL"];
-
-            if (Environment.IsDevelopment())
-            {
-                services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PostgreSQL")));
-            }
-            else
-            {
-                services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(connectionString));
-            }
-
-            services.AddDefaultIdentity<ApplicationUser>()
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationContext>();
-
             var builder = services.AddIdentityServer()
                 .AddInMemoryIdentityResources(identities)
                 .AddInMemoryApiResources(apies)
                 .AddInMemoryClients(clients)
-                .AddAspNetIdentity<ApplicationUser>();
-            //.AddProfileService<CustomProfileService>();
+                .AddAspNetIdentity<ApplicationUser>()
+                .AddCertificat(Environment.IsDevelopment(), Configuration);
+                //.AddProfileService<CustomProfileService>();
 
-            if (Environment.IsDevelopment())
-            {
-                builder.AddDeveloperSigningCredential();
-            }
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
 
@@ -114,12 +107,30 @@ namespace identity.fitness_pro.ru
             });
         }
 
-        void MapSettingToPoco(IServiceCollection services)
+        void MapExternalConfigToPoco(IServiceCollection services)
         {
             services.Configure<ClientSettingModel>(Settings);
             services.Configure<ApiSettingModel>(Settings);
             services.Configure<IdetitySettingModel>(Settings);
             services.Configure<ConnectionStringModel>(Settings);
+            services.Configure<IdentityConfigurationModel>(Settings);
+        }
+
+        string GetConnectionString()
+        {
+            string value = String.Empty;
+
+            if (Environment.IsDevelopment())
+            {
+                value = Configuration.GetConnectionString("PostgreSQL");
+            }
+            else
+            {
+                var confOptions = GetConfigObject<IdentityConfigurationModel>(Services);
+                value = confOptions.Build.Release.ConnectionStrings["PostgreSQL"];
+            }
+
+            return value;
         }
 
         T GetConfigObject<T>(IServiceCollection services) where T: class, new()
