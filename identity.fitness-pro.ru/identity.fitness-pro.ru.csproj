@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <RootNamespace>identity.fitness_pro.ru</RootNamespace>
+    <UserSecretsId>88a06181-d30c-4054-8e1e-722b07fa1bb9</UserSecretsId>
   </PropertyGroup>
 
 
@@ -27,6 +28,13 @@
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="1.1.0" />
     <PackageReference Include="Serilog.Sinks.ColoredConsole" Version="3.0.1" />
     <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Content Update="Configuration\PrivateConfig\IdentityServer4\ApiSettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
