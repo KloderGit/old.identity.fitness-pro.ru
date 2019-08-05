@@ -14,16 +14,16 @@ namespace identity.fitness_pro.ru.Configuration.Extensions
         {
             var certificatFile = externalConfigPath + @"\STAR_fitness-pro_ru.pfx";
 
-            //if (isDevelop)
-            //{
-            //    identityServerBuilder.AddDeveloperSigningCredential();
-            //}
-            //else
-            //{
-            //    identityServerBuilder.AddSigningCredential(new X509Certificate2(certificatFile, ""));
-            //}
+            if (isDevelop)
+            {
+                identityServerBuilder.AddDeveloperSigningCredential();
+            }
+            else
+            {
+                identityServerBuilder.AddSigningCredential(new X509Certificate2(certificatFile, ""));
+            }
 
-            return identityServerBuilder.AddDeveloperSigningCredential(); ;
+            return identityServerBuilder;
         }
     }
 }
