@@ -12,7 +12,7 @@ namespace identity.fitness_pro.ru.Configuration.Extensions
     {
         public static IIdentityServerBuilder AddCertificat(this IIdentityServerBuilder identityServerBuilder, bool isDevelop, string externalConfigPath)
         {
-            var certificatFile = externalConfigPath + @"\STAR_fitness-pro_ru.pfx";
+            var certificatFile = @"C:\STAR_fitness-pro_ru.pfx";
 
             if (isDevelop)
             {
