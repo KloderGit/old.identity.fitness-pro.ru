@@ -73,12 +73,20 @@ namespace identity.fitness_pro.ru
                 .AddInMemoryClients(clients)
                 .AddAspNetIdentity<ApplicationUser>()
                 .AddCertificat(Environment.IsDevelopment(), Configuration);
-            //.AddProfileService<CustomProfileService>();
+                //.AddProfileService<CustomProfileService>();
 
+<<<<<<< HEAD
             if (Environment.IsDevelopment())
             {
                 builder.AddDeveloperSigningCredential();
             }
+            else
+            {
+                var certificatPath = Configuration.GetSection("SettingsFilePath").Value + @"\STAR_fitness-pro_ru.pfx";
+                builder.AddSigningCredential(new X509Certificate2(certificatPath, ""));
+            }
+=======
+>>>>>>> UseUserSecret
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
