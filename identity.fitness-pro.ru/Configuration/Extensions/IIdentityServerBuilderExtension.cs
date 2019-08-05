@@ -12,7 +12,7 @@ namespace identity.fitness_pro.ru.Configuration.Extensions
     {
         public static IIdentityServerBuilder AddCertificat(this IIdentityServerBuilder identityServerBuilder, bool isDevelop, string externalConfigPath)
         {
-            var certif = externalConfigPath + @"\STAR_fitness-pro_ru.pfx";
+            var certificatFile = externalConfigPath + @"\STAR_fitness-pro_ru.pfx";
 
             if (isDevelop)
             {
@@ -20,7 +20,6 @@ namespace identity.fitness_pro.ru.Configuration.Extensions
             }
             else
             {
-                var certificatFile = externalConfigPath + @"\STAR_fitness-pro_ru.pfx";
                 identityServerBuilder.AddSigningCredential(new X509Certificate2(certificatFile, ""));
             }
 
@@ -28,3 +27,5 @@ namespace identity.fitness_pro.ru.Configuration.Extensions
         }
     }
 }
+
+//  X509Certificate2 cert = new X509Certificate2(); cert.Import(certificateFilePath, certPasshrase, X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.MachineKeySet); 
