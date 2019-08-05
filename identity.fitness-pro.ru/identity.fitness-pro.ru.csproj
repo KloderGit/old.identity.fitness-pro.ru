@@ -32,6 +32,12 @@
 
 
   <ItemGroup>
+    <Content Update="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Update="Configuration\PrivateConfig\IdentityServer4\ApiSettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
