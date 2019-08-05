@@ -10,16 +10,18 @@ namespace identity.fitness_pro.ru.Configuration.Extensions
 {
     public static class IIdentityServerBuilderExtension
     {
-        public static IIdentityServerBuilder AddCertificat(this IIdentityServerBuilder identityServerBuilder, bool isDevelop, IConfiguration configuration)
+        public static IIdentityServerBuilder AddCertificat(this IIdentityServerBuilder identityServerBuilder, bool isDevelop, string externalConfigPath)
         {
+            var certif = externalConfigPath + @"\STAR_fitness-pro_ru.pfx";
+
             if (isDevelop)
             {
                 identityServerBuilder.AddDeveloperSigningCredential();
             }
             else
             {
-                var certificat = configuration.GetSection("PrivateConfigPath").Value;
-                identityServerBuilder.AddSigningCredential(new X509Certificate2(certificat, ""));
+                var certificatFile = externalConfigPath + @"\STAR_fitness-pro_ru.pfx";
+                identityServerBuilder.AddSigningCredential(new X509Certificate2(certificatFile, ""));
             }
 
             return identityServerBuilder;

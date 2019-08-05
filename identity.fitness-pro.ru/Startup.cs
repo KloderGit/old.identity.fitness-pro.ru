@@ -25,34 +25,36 @@ namespace identity.fitness_pro.ru
         public IConfiguration Settings { get; }
         public IHostingEnvironment Environment { get; }
         public ILoggerFactory LoggerFactory { get; }
-
-        IServiceCollection Services { get; }
+        private string externalConfigPath;
+        private ExternalPrivateConfigBuilder privateConfig;
 
         public Startup(IConfiguration configuration, IHostingEnvironment environment)
         {
             Configuration = configuration;
             Environment = environment;
+            externalConfigPath = Configuration.GetSection("SettingsFilePath").Value;
 
-            var buildTypeIsTest = Configuration.GetValue<string>("build");
+            //var buildTypeIsTest = Configuration.GetValue<string>("build");
 
-            Settings = new LoadExternalPrivateConfig().Load(Configuration.GetSection("PrivateConfigPath").Value);
+            privateConfig = new ExternalPrivateConfigBuilder(externalConfigPath);
+
+            Settings = privateConfig.GetConfiguration();
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            MapExternalConfigToPoco(services);
+            privateConfig.Build(services);
 
             services.AddLogging();
 
-
-            services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(GetConnectionString()));
+            services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PostgreSQL")));
 
             services.AddDefaultIdentity<ApplicationUser>()
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationContext>();
 
 
-            var identityOptions = GetConfigObject<IdetitySettingModel>(services);
+            var identityOptions = privateConfig.GetConfigObject<IdetitySettingModel>();
             List<IdentityResource> identities = new List<IdentityResource>(IdentityConfig.GetIdentities(identityOptions.Identities))
             {
                 new IdentityResources.OpenId(),
@@ -61,10 +63,10 @@ namespace identity.fitness_pro.ru
                 new IdentityResources.Profile()
             };
 
-            var apiOptions = GetConfigObject<ApiSettingModel>(services);
+            var apiOptions = privateConfig.GetConfigObject<ApiSettingModel>();
             var apies = ApiConfig.GetApis(apiOptions.Apies);
 
-            var clientOptions = GetConfigObject<ClientSettingModel>(services);
+            var clientOptions = privateConfig.GetConfigObject<ClientSettingModel>();
             var clients = ClientsConfig.GetClients(clientOptions);
 
             var builder = services.AddIdentityServer()
@@ -72,13 +74,8 @@ namespace identity.fitness_pro.ru
                 .AddInMemoryApiResources(apies)
                 .AddInMemoryClients(clients)
                 .AddAspNetIdentity<ApplicationUser>()
-                .AddCertificat(Environment.IsDevelopment(), Configuration);
+                .AddCertificat(Environment.IsDevelopment(), externalConfigPath);
             //.AddProfileService<CustomProfileService>();
-
-            if (Environment.IsDevelopment())
-            {
-                builder.AddDeveloperSigningCredential();
-            }
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
@@ -110,38 +107,6 @@ namespace identity.fitness_pro.ru
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-        }
-
-        void MapExternalConfigToPoco(IServiceCollection services)
-        {
-            services.Configure<ClientSettingModel>(Settings);
-            services.Configure<ApiSettingModel>(Settings);
-            services.Configure<IdetitySettingModel>(Settings);
-            services.Configure<ConnectionStringModel>(Settings);
-            services.Configure<IdentityConfigurationModel>(Settings);
-        }
-
-        string GetConnectionString()
-        {
-            string value = String.Empty;
-
-            if (Environment.IsDevelopment())
-            {
-                value = Configuration.GetConnectionString("PostgreSQL");
-            }
-            else
-            {
-                var confOptions = GetConfigObject<IdentityConfigurationModel>(Services);
-                value = confOptions.Build.Release.ConnectionStrings["PostgreSQL"];
-            }
-
-            return value;
-        }
-
-        T GetConfigObject<T>(IServiceCollection services) where T: class, new()
-        {
-            var serviceProvider = services.BuildServiceProvider();
-            return serviceProvider.GetService<IOptions<T>>().Value;
         }
     }
 }
