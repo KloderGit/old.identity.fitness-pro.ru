@@ -12,19 +12,18 @@ namespace identity.fitness_pro.ru.Configuration.Extensions
     {
         public static IIdentityServerBuilder AddCertificat(this IIdentityServerBuilder identityServerBuilder, bool isDevelop, string externalConfigPath)
         {
-            var certif = externalConfigPath + @"\STAR_fitness-pro_ru.pfx";
+            var certificatFile = externalConfigPath + @"\STAR_fitness-pro_ru.pfx";
 
-            if (isDevelop)
-            {
-                identityServerBuilder.AddDeveloperSigningCredential();
-            }
-            else
-            {
-                var certificatFile = externalConfigPath + @"\STAR_fitness-pro_ru.pfx";
-                identityServerBuilder.AddSigningCredential(new X509Certificate2(certificatFile, ""));
-            }
+            //if (isDevelop)
+            //{
+            //    identityServerBuilder.AddDeveloperSigningCredential();
+            //}
+            //else
+            //{
+            //    identityServerBuilder.AddSigningCredential(new X509Certificate2(certificatFile, ""));
+            //}
 
-            return identityServerBuilder;
+            return identityServerBuilder.AddDeveloperSigningCredential(); ;
         }
     }
 }
