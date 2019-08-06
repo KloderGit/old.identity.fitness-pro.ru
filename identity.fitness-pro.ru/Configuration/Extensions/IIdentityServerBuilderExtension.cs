@@ -1,18 +1,13 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using identity.fitness_pro.ru.Configuration.Models;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
 
 namespace identity.fitness_pro.ru.Configuration.Extensions
 {
     public static class IIdentityServerBuilderExtension
     {
-        public static IIdentityServerBuilder AddCertificat(this IIdentityServerBuilder identityServerBuilder, bool isDevelop, string externalConfigPath)
+        public static IIdentityServerBuilder AddCertificat(this IIdentityServerBuilder identityServerBuilder, bool isDevelop, CertificatConfigModel certificatmodel)
         {
-            var certificatFile = externalConfigPath + @"\STAR_fitness-pro_ru.pfx";
+            var certificat = certificatmodel.GetCertificatFromFile();
 
             if (isDevelop)
             {
@@ -20,12 +15,10 @@ namespace identity.fitness_pro.ru.Configuration.Extensions
             }
             else
             {
-                identityServerBuilder.AddSigningCredential(new X509Certificate2(certificatFile, ""));
+                identityServerBuilder.AddSigningCredential(certificat);
             }
 
             return identityServerBuilder;
         }
     }
 }
-
-//  X509Certificate2 cert = new X509Certificate2(); cert.Import(certificateFilePath, certPasshrase, X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.MachineKeySet); 

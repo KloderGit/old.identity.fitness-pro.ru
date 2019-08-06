@@ -13,41 +13,28 @@ namespace identity.fitness_pro.ru.Configuration
     public class ExternalPrivateConfigBuilder
     {
         IConfiguration config;
-        IServiceCollection services;
 
         public ExternalPrivateConfigBuilder(string path)
         {
             var builder = new ConfigurationBuilder()
-                .SetBasePath(path)
+                //.SetBasePath(path)
                 .AddJsonFile(path + @"\IdentitySettings.json", true, true)
                 .AddJsonFile(path + @"\ApiSettings.json", true, true)
-                .AddJsonFile(path + @"\ClientSettings.json", true, true)
-                .AddJsonFile(path + @"\IdentityConfiguration.json", true, true)
-                .AddJsonFile(path + @"\ConnectionSettings.json", true, true);
+                .AddJsonFile(path + @"\ClientSettings.json", true, true);
 
             config = builder.Build();
         }
 
-        public void Build(IServiceCollection services)
+        public void MapToPocoInService(IServiceCollection services)
         {
-            this.services = services;
-
             services.Configure<ClientSettingModel>(config);
             services.Configure<ApiSettingModel>(config);
             services.Configure<IdetitySettingModel>(config);
-            services.Configure<ConnectionStringModel>(config);
-            services.Configure<IdentityConfigurationModel>(config);
         }
 
         public IConfiguration GetConfiguration()
         {
             return config;
-        }
-
-        internal T GetConfigObject<T>() where T : class, new()
-        {
-            var serviceProvider = services.BuildServiceProvider();
-            return serviceProvider.GetService<IOptions<T>>().Value;
         }
     }
 }

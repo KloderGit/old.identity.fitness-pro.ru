@@ -15,6 +15,7 @@ using Microsoft.Extensions.Options;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
 namespace identity.fitness_pro.ru
@@ -33,19 +34,18 @@ namespace identity.fitness_pro.ru
             Configuration = configuration;
             Environment = environment;
             externalConfigPath = Configuration.GetSection("SettingsFilePath").Value;
-
-            //var buildTypeIsTest = Configuration.GetValue<string>("build");
-
+            //var commandLineArg = Configuration.GetValue<string>("build");
             privateConfig = new ExternalPrivateConfigBuilder(externalConfigPath);
-
             Settings = privateConfig.GetConfiguration();
         }
 
         public void ConfigureServices(IServiceCollection services)
         {
-            privateConfig.Build(services);
+            privateConfig.MapToPocoInService(services);
 
             services.AddLogging();
+
+            services.AddTransient<IConfiguration>(provider => Configuration);
 
             services.AddDbContext<ApplicationContext>(options => options.UseNpgsql(Configuration.GetConnectionString("PostgreSQL")));
 
@@ -53,8 +53,11 @@ namespace identity.fitness_pro.ru
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationContext>();
 
+            services.Configure<CertificatConfigModel>(Configuration.GetSection("Certificat"));
+            var certificatConfigModel = services.GetOption<CertificatConfigModel>();
 
-            var identityOptions = privateConfig.GetConfigObject<IdetitySettingModel>();
+
+            var identityOptions = services.GetOption<IdetitySettingModel>();
             List<IdentityResource> identities = new List<IdentityResource>(IdentityConfig.GetIdentities(identityOptions.Identities))
             {
                 new IdentityResources.OpenId(),
@@ -63,10 +66,10 @@ namespace identity.fitness_pro.ru
                 new IdentityResources.Profile()
             };
 
-            var apiOptions = privateConfig.GetConfigObject<ApiSettingModel>();
+            var apiOptions = services.GetOption<ApiSettingModel>();
             var apies = ApiConfig.GetApis(apiOptions.Apies);
 
-            var clientOptions = privateConfig.GetConfigObject<ClientSettingModel>();
+            var clientOptions = services.GetOption<ClientSettingModel>();
             var clients = ClientsConfig.GetClients(clientOptions);
 
             var builder = services.AddIdentityServer()
@@ -74,7 +77,7 @@ namespace identity.fitness_pro.ru
                 .AddInMemoryApiResources(apies)
                 .AddInMemoryClients(clients)
                 .AddAspNetIdentity<ApplicationUser>()
-                .AddCertificat(Environment.IsDevelopment(), externalConfigPath);
+                .AddCertificat(Environment.IsDevelopment(), certificatConfigModel);
             //.AddProfileService<CustomProfileService>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
