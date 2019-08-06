@@ -7,15 +7,13 @@ namespace identity.fitness_pro.ru.Configuration.Extensions
     {
         public static IIdentityServerBuilder AddCertificat(this IIdentityServerBuilder identityServerBuilder, bool isDevelop, CertificatConfigModel certificatmodel)
         {
-            var certificat = certificatmodel.GetCertificatFromFile();
-
             if (isDevelop)
             {
                 identityServerBuilder.AddDeveloperSigningCredential();
             }
             else
             {
-                identityServerBuilder.AddSigningCredential(certificat);
+                identityServerBuilder.AddSigningCredential(certificatmodel.GetCertificatFromFile());
             }
 
             return identityServerBuilder;
