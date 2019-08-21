@@ -13,6 +13,7 @@ namespace identity.fitness_pro.ru.Configuration.Models
     public class ClientSecret
     {
         public string ClientId { get; set; }
+        public string ClientName { get; set; }
         public string Secret { get; set; }
         public ICollection<string> Scopes { get; set; }
     }

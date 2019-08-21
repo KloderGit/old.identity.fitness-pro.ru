@@ -46,6 +46,26 @@ namespace identity.fitness_pro.ru.Areas.Identity.Pages.Account
 
         public class InputModel
         {
+            [Display(Name = "BirthDay")]
+            public DateTime Birthday { get; set; }
+
+            [Required]
+            [Display(Name = "UserName")]
+            public string UserName { get; set; }
+
+            [Display(Name = "Adress")]
+            public string Adress { get; set; }
+
+            [Display(Name = "Picture")]
+            public string Picture { get; set; }
+
+            [Display(Name = "Skype")]
+            public string Skype { get; set; }
+
+            [Required]
+            [Display(Name = "Phone")]
+            public string PhoneNumber { get; set; }
+
             [Required]
             [EmailAddress]
             [Display(Name = "Email")]
@@ -83,15 +103,19 @@ namespace identity.fitness_pro.ru.Areas.Identity.Pages.Account
 
                 var user = new ApplicationUser
                 {
-                    UserName = Input.Email,
+                    UserName = Input.UserName,
                     Email = Input.Email,
-                    Birthdate = new DateTime(new Random().Next(1990, 2005), new Random().Next(1, 12), new Random().Next(1, 30))
+                    Birthdate = Input.Birthday,
+                    Address = Input.Adress,
+                    Picture = Input.Picture,
+                    PhoneNumber = Input.PhoneNumber
                 };
 
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
-                    await _userManager.AddClaimAsync(user, new Claim("My Test Claim", "--There is a claim value--", ClaimValueTypes.String, "SelfIssuer"));
+                    if (!String.IsNullOrEmpty(Input.Skype))
+                        await _userManager.AddClaimAsync(user, new Claim("Messanger.Skype", Input.Skype, ClaimValueTypes.String, "SelfIssuer"));
 
                     //var rrs = await _userManager.AddToRoleAsync(user, "kld-admin");
 

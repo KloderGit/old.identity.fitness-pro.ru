@@ -17,6 +17,7 @@ namespace identity.fitness_pro.ru.Configuration
                 new Client
                 {
                     ClientId = option.FpaService.ClientId,
+                    ClientName = option.FpaService.ClientName,                    
                     AllowedGrantTypes = GrantTypes.ClientCredentials,
                     ClientSecrets =
                     {
@@ -27,6 +28,7 @@ namespace identity.fitness_pro.ru.Configuration
                 new Client
                 {
                     ClientId = option.FpaMobile.ClientId,
+                    ClientName = option.FpaMobile.ClientName,
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
                     ClientSecrets =
                     {
@@ -37,7 +39,7 @@ namespace identity.fitness_pro.ru.Configuration
                 new Client
                 {
                     ClientId = option.FpaSite.ClientId,
-                    ClientName = "MVC Client",
+                    ClientName = option.FpaSite.ClientName,
                     AllowedGrantTypes = GrantTypes.Hybrid,
 
                     ClientSecrets =

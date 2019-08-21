@@ -11,15 +11,17 @@ namespace identity.fitness_pro.ru.Configuration
     {
         public static IEnumerable<IdentityResource> GetIdentities(IEnumerable<ResourceModel> items)
         {
-            var resources = items.Select(item => new IdentityResource(item.Name, item.DisplayName, item.UserClaims));
-
-            return new List<IdentityResource>(resources)
+            var openIdConnectResources = new List<IdentityResource>()
             {
                 new IdentityResources.OpenId(),
                 new IdentityResources.Email(),
                 new IdentityResources.Phone(),
                 new IdentityResources.Profile()
             };
+
+            var additionalResources = items.Select(item => new IdentityResource(item.Name, item.DisplayName, item.UserClaims));
+
+            return additionalResources.Concat(openIdConnectResources);
         }
     }
 }
