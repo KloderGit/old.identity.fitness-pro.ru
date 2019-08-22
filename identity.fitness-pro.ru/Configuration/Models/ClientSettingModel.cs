@@ -5,9 +5,10 @@ namespace identity.fitness_pro.ru.Configuration.Models
 {
     public class ClientSettingModel
     {
-        public ClientSecret FpaService { get; set; }
-        public ClientSecret FpaMobile { get; set; }
-        public ClientUrls FpaSite { get; set; }
+        public ClientSecret ClientCredential_Anna { get; set; }
+        public ClientSecret ResourceOwner_Anabel { get; set; }
+        public ClientUrls Hybrid_Alexa { get; set; }
+        public ClientUrls AuthCode_Amber { get; set; }
     }
 
     public class ClientSecret
