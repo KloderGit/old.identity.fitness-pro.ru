@@ -17,10 +17,14 @@ namespace identity.fitness_pro.ru.Areas.Identity.Pages.Account
     public class LoginModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         //private readonly ILogger<LoginModel> _logger;
 
-        public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<ApplicationUser> signInManager, 
+            ILogger<LoginModel> logger,
+            UserManager<ApplicationUser> userManager)
         {
+            _userManager = userManager;
             _signInManager = signInManager;
             //_logger = logger;
         }
@@ -38,6 +42,7 @@ namespace identity.fitness_pro.ru.Areas.Identity.Pages.Account
         public class InputModel
         {
             [Required]
+            [EmailAddress]
             public string Email { get; set; }
 
             [Required]
@@ -71,9 +76,11 @@ namespace identity.fitness_pro.ru.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
+                var user = await _userManager.FindByEmailAsync(Input.Email);
+
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
+                var result = await _signInManager.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: true);
 
                 if (result.Succeeded)
                 {
